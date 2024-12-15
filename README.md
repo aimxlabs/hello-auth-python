@@ -5,5 +5,5 @@ A Python package for generating and verifying "hello" authentication messages fo
 ## Installation
 
 ```bash
-pip install hello-auth
+pip install hello-message
 ```
