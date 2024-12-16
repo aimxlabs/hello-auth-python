@@ -11,7 +11,7 @@ setup(
     url="https://github.com/aimxlabs/hello-message-python",
     packages=find_packages(include=["hello_message", "hello_message.*"]),  # Explicitly include the package
     install_requires=[
-        "eth-account>=0.5.7",
+        "eth-account>=0.13.4",
     ],
     extras_require={  # Allow optional dependencies for additional features
         "dev": ["pytest"],  # Development tools

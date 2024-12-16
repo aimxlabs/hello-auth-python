@@ -1,0 +1,5 @@
+# Runtime dependencies
+eth-account==0.13.4
+
+# Development dependencies
+pytest==8.3.4
