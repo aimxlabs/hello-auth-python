@@ -1,6 +1,6 @@
 # Hello-Message Python SDK
 
-The Hello-Message Python SDK provides a simple interface for generating and verifying "hello" authentication messages for AI-to-AI and AI-to-AI-first services. This SDK is designed to work with Ethereum-based systems using cryptographic signatures for secure authentication.
+The Hello-Message Python SDK provides a simple interface for generating and verifying "hello" authentication messages for AI-to-AI and AI-to-AI-first services. This SDK is designed to work by using cryptographic signatures for secure authentication.
 
 ---
 
