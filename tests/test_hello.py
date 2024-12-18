@@ -1,5 +1,5 @@
 import pytest
-from hello_message.hello import Hello
+from hello_message import Hello
 
 def test_hello():
     private_key = "0x4c0883a6910395b1e8dcd7db363c124593f3e8e62e4a8c32ef45b3ef82317b03"
