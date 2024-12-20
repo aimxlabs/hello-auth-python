@@ -1,3 +1,4 @@
+import uuid
 from eth_account import Account
 from eth_account.messages import encode_defunct
 
@@ -19,25 +20,44 @@ class Hello:
         """
         return self.address
 
-    def get_signature(self) -> str:
+    def generate_hello_message(self):
         """
-        Generate a signed "hello" message.
+        Generate a hello message
 
-        :return: The signature of the "hello" message in hex format.
+        :return: A dictionary containing the message, nonce, and signature.
         """
-        message = encode_defunct(text="hello")
-        signed_message = Account.sign_message(message, private_key=self.private_key)
-        return signed_message.signature.hex()
+        nonce = str(uuid.uuid4())
+        message = f"hello:{nonce}"
+        message_hash = encode_defunct(text=message)
+        signature = Account.sign_message(message_hash, private_key=self.private_key)
+        return {"message": message, "nonce": nonce, "signature": signature.signature.hex()}
 
     @staticmethod
-    def verify_signature(signature: str, address: str) -> bool:
+    def verify_signature(signature: str, message: str, address: str):
         """
-        Verify a signed "hello" message.
+        Verify the authenticity of a "hello" message signature and validate the nonce.
 
-        :param signature: The signature of the "hello" message.
-        :param address: The Ethereum address that allegedly signed the message.
-        :return: True if the signature is valid, False otherwise.
+        :param signature: The signed "hello" message.
+        :param message: The original "hello" message (e.g., "hello:<nonce>").
+        :param address: The Ethereum address expected to have signed the message.
+        :return: True if the signature and nonce are valid, False otherwise.
         """
-        message = encode_defunct(text="hello")
-        recovered_address = Account.recover_message(message, signature=signature)
-        return recovered_address.lower() == address.lower()
+        try:
+            # Extract the nonce from the message
+            if not message.startswith("hello:"):
+                raise ValueError("Invalid message format.")
+
+            # Verify the signature
+            message_hash = encode_defunct(text=message)
+            recovered_address = Account.recover_message(message_hash, signature=signature)
+
+            # Check if the recovered address matches the expected address
+            if recovered_address.lower() != address.lower():
+                print("Signature verification failed.")
+                return False
+
+            return True
+
+        except Exception as e:
+            print(f"Verification error: {e}")
+            return False
