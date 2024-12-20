@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="hello-message-sdk",
-    version="0.1.0",
+    version="0.2.0",
     description="A Python SDK for AI agents to securely generate and verify 'hello' authentication messages, enabling seamless interaction between AI agents and AI-centric services.",
     long_description=open("README.md", encoding="utf-8").read(),  # Ensure correct encoding for non-ASCII characters
     long_description_content_type="text/markdown",
