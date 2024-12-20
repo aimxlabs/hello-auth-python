@@ -6,8 +6,8 @@ setup(
     description="A Python SDK for AI agents to securely generate and verify 'hello' authentication messages, enabling seamless interaction between AI agents and AI-centric services.",
     long_description=open("README.md", encoding="utf-8").read(),  # Ensure correct encoding for non-ASCII characters
     long_description_content_type="text/markdown",
-    author="Garett Rogers",
-    author_email="garett@aimx.com",
+    author="anythingmachine",
+    author_email="anythingmachine@aimx.com",
     url="https://github.com/aimxlabs/hello-message-python",
     packages=find_packages(include=["hello_message", "hello_message.*"]),  # Explicitly include the package
     install_requires=[

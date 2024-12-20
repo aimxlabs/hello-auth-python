@@ -1,0 +1,4 @@
+requests
+crewai
+hello-message-sdk
+crewai[tools]
