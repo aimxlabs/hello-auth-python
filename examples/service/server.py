@@ -3,8 +3,8 @@ from hello_message import Hello
 
 app = Flask(__name__)
 
-# This private key is for verification purposes only -- should not be used in production
-used_nonces = [] # TODO: Nonces should be stored in a database
+# Nonces should actually be stored in a database...
+used_nonces = []
 
 def require_authentication(f):
     def decorated_function(*args, **kwargs):
