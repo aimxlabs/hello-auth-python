@@ -47,13 +47,19 @@ response = requests.get(url, headers=headers)
 
 ```python
 from hello_message import Hello
+auth_header = request.headers.get('Authorization')
+message = request.headers.get('X-Hello-Message')
+address = request.headers.get('X-Hello-Address')
 
-# Example signature and address
-signature = "<signature_from_hello_message>"
-address = "<ethereum_address>"
+# Alaways check if the nonce has not been used before
+nonce = message.split(':')[1]
+# ... check if nonce has already been used here ...
 
-# Verify the signature
-is_valid = Hello.verify_signature(hello_message["signature"], hello_message["message"], address)
+# Extract the signed message from the Authorization header
+signature = auth_header.split(' ')[1]  # Assuming 'Bearer <signed_message>'
+
+# Verify the signed message
+is_valid = Hello.verify_signature(signature, message, address):
 print("Is valid:", is_valid)
 ```
 
