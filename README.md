@@ -48,11 +48,10 @@ from hello_message import Hello
 
 message = request.headers.get('X-Hello-Message')
 
-# you should check if nonce has already been used here to prevent replay attacks
-
 # Verify the signed message
 validation_response = Hello.verify_signature(message):
 print("Is valid:", validation_response["is_valid"])
+print("Nonce to check:", validation_response["nonce"])
 ```
 
 ---
