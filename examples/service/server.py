@@ -8,21 +8,15 @@ used_nonces = []
 
 def require_authentication(f):
     def decorated_function(*args, **kwargs):
-        auth_header = request.headers.get('Authorization')
+        signature = request.headers.get('X-Hello-Signature')
         message = request.headers.get('X-Hello-Message')
         address = request.headers.get('X-Hello-Address')
-
-        if not auth_header:
-            return jsonify({'error': 'Authorization header missing'}), 401
 
         # Check if the nonce has not been used before
         if message.split(':')[1] in used_nonces:
             return jsonify({'error': 'Nonce already used'}), 401
 
         try:
-            # Extract the signed message from the Authorization header
-            signature = auth_header.split(' ')[1]  # Assuming 'Bearer <signed_message>'
-            
             # Verify the signed message
             if not Hello.verify_signature(signature, message, address):
                 return jsonify({'error': 'Invalid or expired token'}), 401

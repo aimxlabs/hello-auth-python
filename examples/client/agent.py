@@ -14,7 +14,7 @@ url = 'http://127.0.0.1:5000/protected'  # Adjust the URL if your Flask service 
 
 # Set up the headers with the signed message for authentication
 headers = {
-    'Authorization': f'Bearer {signed_message["signature"]}',
+    'X-Hello-Signature': signed_message["signature"],
     'X-Hello-Message': signed_message["message"],
     'X-Hello-Address': hello.get_address()
 }
