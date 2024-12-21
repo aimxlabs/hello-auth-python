@@ -35,9 +35,7 @@ url = 'http://127.0.0.1:5000/protected'  # Adjust the URL if your Flask service 
 
 # Set up the headers with the signed message for authentication
 headers = {
-    'X-Hello-Signature': signed_message["signature"],
-    'X-Hello-Message': signed_message["message"],
-    'X-Hello-Address': hello.get_address()
+    'X-Hello-Message': signed_message
 }
 
 response = requests.get(url, headers=headers)
@@ -48,16 +46,13 @@ response = requests.get(url, headers=headers)
 ```python
 from hello_message import Hello
 
-signature = request.headers.get('X-Hello-Signature')
 message = request.headers.get('X-Hello-Message')
-address = request.headers.get('X-Hello-Address')
-nonce = message.split(':')[1]
 
 # you should check if nonce has already been used here to prevent replay attacks
 
 # Verify the signed message
-is_valid = Hello.verify_signature(signature, message, address):
-print("Is valid:", is_valid)
+validation_response = Hello.verify_signature(message):
+print("Is valid:", validation_response["is_valid"])
 ```
 
 ---
