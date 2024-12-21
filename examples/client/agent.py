@@ -1,4 +1,5 @@
 import requests
+import time
 from hello_message import Hello
 
 # Initialize the Hello SDK with your private key
@@ -6,17 +7,12 @@ from hello_message import Hello
 private_key = '0x4c0883a6910395b1e8dcd7db363c124593f3e8e62e4a8c32ef45b3ef82317b03'  # Replace with your actual private key
 hello = Hello(private_key)
 
-# Generate a signed message
-signed_message = hello.generate_hello_message()
-
 # Define the URL of the protected route
 url = 'http://127.0.0.1:5000/protected'  # Adjust the URL if your Flask service is hosted elsewhere
 
 # Set up the headers with the signed message for authentication
 headers = {
-    'X-Hello-Signature': signed_message["signature"],
-    'X-Hello-Message': signed_message["message"],
-    'X-Hello-Address': hello.get_address()
+    'X-Hello-Message': hello.generate_hello_message(),
 }
 
 try:
@@ -26,6 +22,7 @@ try:
     # Check if the request was successful
     if response.status_code == 200:
         print('SUCCESS: Protected route is accessible')
+        print(response.text)
     else:
         print('ERROR:', response.text)
 
@@ -36,8 +33,7 @@ try:
     if replay_attack_response.status_code >= 400:
         print('SUCCESS: Replay attack was blocked')
     else:
-        print(f'ERROR: Replay attack has happened.')
-    
+        print(f'ERROR: Replay attack has happened.')    
     
 
 except requests.exceptions.RequestException as e:
