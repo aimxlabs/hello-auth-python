@@ -23,22 +23,24 @@ pip install hello-message-sdk
 
 ## Quick Start
 
-### Generate a "Hello" Message
+### Generate and use a "Hello" Message
 
 ```python
-from hello_message import Hello
 
-# Initialize the Hello SDK with a private key
-private_key = "<your_ethereum_private_key>"
-hello = Hello(private_key=private_key)
+# Generate a signed message
+signed_message = hello.generate_hello_message()
 
-# Get the Ethereum address
-address = hello.get_address()
-print("Address:", address)
+# Define the URL of the protected route
+url = 'http://127.0.0.1:5000/protected'  # Adjust the URL if your Flask service is hosted elsewhere
 
-# Generate a signed "hello" message
-hello_message = hello.generate_hello_message()
-print("Hello Message:", hello_message)
+# Set up the headers with the signed message for authentication
+headers = {
+    'Authorization': f'Bearer {signed_message["signature"]}',
+    'X-Hello-Message': signed_message["message"],
+    'X-Hello-Address': hello.get_address()
+}
+
+response = requests.get(url, headers=headers)
 ```
 
 ### Verify a "Hello" Message
