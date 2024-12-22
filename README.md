@@ -26,12 +26,20 @@ pip install hello-message-sdk
 ### Generate and use a "Hello" Message
 
 ```python
+# Initialize the Hello SDK with your private key
+# This private key is for verification purposes only -- should not be used in production
+def key_provider():
+    # E.g. should retrieve from environment or secure vault, not hardcoded like it is here.
+    private_key = '0x4c0883a6910395b1e8dcd7db363c124593f3e8e62e4a8c32ef45b3ef82317b03'  # Replace with your actual private key
+    return private_key
+
+hello = Hello(key_provider)
 
 # Generate a signed message
 signed_message = hello.generate_hello_message()
 
 # Define the URL of the protected route
-url = 'http://127.0.0.1:5000/protected'  # Adjust the URL if your Flask service is hosted elsewhere
+url = 'API_ENDPOINT_URL'  # Adjust the URL if your Flask service is hosted elsewhere
 
 # Set up the headers with the signed message for authentication
 headers = {
@@ -50,7 +58,9 @@ message = request.headers.get('X-Hello-Message')
 
 # Verify the signed message
 validation_response = Hello.verify_signature(message):
-print("Is valid:", validation_response["is_valid"])
+print("Is valid:", validation_response["valid"])
+
+# If the message is valid, you should use the nonce to check if it has already been used to prevent replay attacks
 print("Nonce to check:", validation_response["nonce"])
 ```
 
@@ -60,11 +70,11 @@ print("Nonce to check:", validation_response["nonce"])
 
 ### Class: `Hello`
 
-#### **`Hello(private_key: str)`**
+#### **`Hello(key_provider: callable)`**
 
-Initialize the Hello object with an Ethereum private key.
+Initialize the Hello object with an Ethereum private key provider.
 
-- `private_key`: Ethereum private key (string) used for signing messages.
+- `key_provider`: Ethereum private key provider to use retrieve the private key for signing messages.
 
 #### **`get_address() -> str`**
 
