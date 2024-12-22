@@ -54,8 +54,11 @@ class Hello:
         :param hello_message: The base64 encoded "hello" message (in the format "hello:{nonce}:{expires}") containing signature and metadata.
         :return: A dictionary containing validation result, signer address and nonce.
         """
+
+        # Decode the message
         message_dict = json.loads(base64.b64decode(hello_message).decode('utf-8'))
 
+        # Check that the message contains the required fields
         if not all(k in message_dict for k in ("message", "signature", "address")):
             raise ValueError("Missing required fields in hello message")
 
@@ -63,29 +66,27 @@ class Hello:
         if len(message_dict["signature"]) != 130:
             raise ValueError("Invalid signature length")
 
+        # Validate message format
+        parts = message_dict["message"].split(":")
+        if len(parts) != 3 or parts[0] != "hello":
+            raise ValueError("Invalid message format")
+
+        # Extract message data
+        message_text = message_dict["message"]
+        nonce = message_dict["message"].split(":")[1]
+        expires = message_dict["message"].split(":")[2]
+        signature = message_dict["signature"]
+        address = message_dict["address"]
+
+        # Verify that nonce is a valid uuid
+        if not uuid.UUID(nonce):
+            raise ValueError("Invalid nonce format")
+
+        # Verify that expires is a valid timestamp
+        if not expires.isdigit():
+            raise ValueError("Invalid expires format")
+
         try:
-            # Decode and parse the message
-
-            # Validate message format
-            parts = message_dict["message"].split(":")
-            if len(parts) != 3 or parts[0] != "hello":
-                raise ValueError("Invalid message format")
-
-            # Extract nonce and expires from the message
-            message_text = message_dict["message"]
-            nonce = message_dict["message"].split(":")[1]
-            expires = message_dict["message"].split(":")[2]
-            signature = message_dict["signature"]
-            address = message_dict["address"]
-
-            # Verify that nonce is a valid uuid
-            if not uuid.UUID(nonce):
-                raise ValueError("Invalid nonce format")
-
-            # Verify that expires is a valid timestamp
-            if not expires.isdigit():
-                raise ValueError("Invalid expires format")
-
             # Verify signature and recover signer
             recovered_address = Account.recover_message(
                 encode_defunct(text=message_text), 
