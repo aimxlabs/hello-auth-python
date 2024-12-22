@@ -4,8 +4,12 @@ from hello_message import Hello
 
 # Initialize the Hello SDK with your private key
 # This private key is for verification purposes only -- should not be used in production
-private_key = '0x4c0883a6910395b1e8dcd7db363c124593f3e8e62e4a8c32ef45b3ef82317b03'  # Replace with your actual private key
-hello = Hello(private_key)
+def key_provider():
+    # E.g. should retrieve from environment or secure vault, not hardcoded like it is here.
+    private_key = '0x4c0883a6910395b1e8dcd7db363c124593f3e8e62e4a8c32ef45b3ef82317b03'  # Replace with your actual private key
+    return private_key
+
+hello = Hello(key_provider)
 
 # Define the URL of the protected route
 url = 'http://127.0.0.1:5000/protected'  # Adjust the URL if your Flask service is hosted elsewhere

@@ -6,14 +6,14 @@ from eth_account import Account
 from eth_account.messages import encode_defunct
 
 class Hello:
-    def __init__(self, private_key: str):
+    def __init__(self, key_provider: callable):
         """
         Initialize the Hello message generator with a private key.
 
-        :param private_key: Ethereum private key for signing messages.
+        :param key_provider: A callable that returns an Ethereum private key for signing messages.
         """
-        self.private_key = private_key
-        self.address = Account.from_key(private_key).address
+        self.key_provider = key_provider
+        self.address = Account.from_key(self.key_provider()).address
 
     def get_address(self) -> str:
         """
@@ -36,38 +36,47 @@ class Hello:
         expires = str(int(time.time() + expires_in_seconds))
 
         # Create the message
-        message = f"hello:{nonce}:{expires}"
+        message_text = f"hello:{nonce}:{expires}"
 
         # Sign the message
-        signature = Account.sign_message(encode_defunct(text=message), private_key=self.private_key)
+        signature = Account.sign_message(encode_defunct(text=message_text), private_key=self.key_provider())
 
         # Create the hello message
-        hello_message = {"message": message, "signature": signature.signature.hex(), "address": self.address}
+        hello_message = {"message": message_text, "signature": signature.signature.hex(), "address": self.address}
 
         return base64.b64encode(json.dumps(hello_message).encode('utf-8')).decode('utf-8')
 
     @staticmethod
-    def verify_signature(message:str):
+    def verify_signature(hello_message:str):
         """
         Verify the authenticity of a "hello" message signature and validate the nonce.
 
-        :param message: The base64 encoded "hello" message (in the format "hello:{nonce}:{expires}") containing signature and metadata.
+        :param hello_message: The base64 encoded "hello" message (in the format "hello:{nonce}:{expires}") containing signature and metadata.
         :return: A dictionary containing validation result, signer address and nonce.
         """
+        message_dict = json.loads(base64.b64decode(hello_message).decode('utf-8'))
+
+        if not all(k in message_dict for k in ("message", "signature", "address")):
+            raise ValueError("Missing required fields in hello message")
+
+        # Check that the signature length is 130 bytes (65 bytes * 2 for r and s)
+        if len(message_dict["signature"]) != 130:
+            raise ValueError("Invalid signature length")
+
         try:
             # Decode and parse the message
-            hello_message = json.loads(base64.b64decode(message).decode('utf-8'))
 
             # Validate message format
-            if not len(hello_message["message"].split(":")) == 3:
+            parts = message_dict["message"].split(":")
+            if len(parts) != 3 or parts[0] != "hello":
                 raise ValueError("Invalid message format")
 
             # Extract nonce and expires from the message
-            message = hello_message["message"]
-            nonce = hello_message["message"].split(":")[1]
-            expires = hello_message["message"].split(":")[2]
-            signature = hello_message["signature"]
-            address = hello_message["address"]
+            message_text = message_dict["message"]
+            nonce = message_dict["message"].split(":")[1]
+            expires = message_dict["message"].split(":")[2]
+            signature = message_dict["signature"]
+            address = message_dict["address"]
 
             # Verify that nonce is a valid uuid
             if not uuid.UUID(nonce):
@@ -78,9 +87,8 @@ class Hello:
                 raise ValueError("Invalid expires format")
 
             # Verify signature and recover signer
-            message_hash = encode_defunct(text=message)
             recovered_address = Account.recover_message(
-                message_hash, 
+                encode_defunct(text=message_text), 
                 signature=signature
             )
 
