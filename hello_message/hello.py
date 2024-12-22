@@ -23,28 +23,35 @@ class Hello:
         """
         return self.address
 
-    def generate_hello_message(self):
+    def generate_hello_message(self, expires_in_seconds: int = 5):
         """
         Generate a hello message
 
         :return: A dictionary containing the message, nonce, and signature.
         """
+        # Generate a nonce
         nonce = str(uuid.uuid4())
-        expiration_timestamp = str(int(time.time() + 5)) # Add an expiration timestamp 5 seconds from now
-        message = f"hello:{nonce}:{expiration_timestamp}"
-        message_hash = encode_defunct(text=message)
-        signature = Account.sign_message(message_hash, private_key=self.private_key)
-        generated_message = {"message": message, "signature": signature.signature.hex(), "address": self.address}
-        result = base64.b64encode(json.dumps(generated_message).encode('utf-8')).decode('utf-8')
 
-        return result
+        # Generate an expiration timestamp
+        expires = str(int(time.time() + expires_in_seconds))
+
+        # Create the message
+        message = f"hello:{nonce}:{expires}"
+
+        # Sign the message
+        signature = Account.sign_message(encode_defunct(text=message), private_key=self.private_key)
+
+        # Create the hello message
+        hello_message = {"message": message, "signature": signature.signature.hex(), "address": self.address}
+
+        return base64.b64encode(json.dumps(hello_message).encode('utf-8')).decode('utf-8')
 
     @staticmethod
     def verify_signature(message:str):
         """
         Verify the authenticity of a "hello" message signature and validate the nonce.
 
-        :param message: The base64 encoded "hello" message containing signature and metadata.
+        :param message: The base64 encoded "hello" message (in the format "hello:{nonce}:{expires}") containing signature and metadata.
         :return: A dictionary containing validation result, signer address and nonce.
         """
         try:
@@ -52,28 +59,40 @@ class Hello:
             hello_message = json.loads(base64.b64decode(message).decode('utf-8'))
 
             # Validate message format
-            if not hello_message["message"].startswith("hello:"):
+            if not len(hello_message["message"].split(":")) == 3:
                 raise ValueError("Invalid message format")
 
+            # Extract nonce and expires from the message
+            message = hello_message["message"]
             nonce = hello_message["message"].split(":")[1]
             expires = hello_message["message"].split(":")[2]
+            signature = hello_message["signature"]
+            address = hello_message["address"]
+
+            # Verify that nonce is a valid uuid
+            if not uuid.UUID(nonce):
+                raise ValueError("Invalid nonce format")
+
+            # Verify that expires is a valid timestamp
+            if not expires.isdigit():
+                raise ValueError("Invalid expires format")
 
             # Verify signature and recover signer
-            message_hash = encode_defunct(text=hello_message["message"])
+            message_hash = encode_defunct(text=message)
             recovered_address = Account.recover_message(
                 message_hash, 
-                signature=hello_message["signature"]
+                signature=signature
             )
 
             # Verify the current time is before the expiration timestamp
-            is_valid_timestamp = int(time.time()) < int(expires)
+            is_not_expired = int(time.time()) < int(expires)
 
             # Verify recovered address matches claimed address
-            is_valid = is_valid_timestamp and recovered_address.lower() == hello_message["address"].lower()
+            is_valid = is_not_expired and recovered_address.lower() == address.lower()
 
             return {
                 "valid": is_valid,
-                "address": hello_message["address"], 
+                "address": address, 
                 "nonce": nonce,
                 "expires": expires
             }

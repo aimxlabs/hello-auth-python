@@ -21,8 +21,8 @@ try:
 
     # Check if the request was successful
     if response.status_code == 200:
-        print('SUCCESS: Protected route is accessible')
-        print(response.text)
+        print('SUCCESS:', response.text)
+        #print(response.text)
     else:
         print('ERROR:', response.text)
 
@@ -31,9 +31,9 @@ try:
 
     # Check if the request was successful
     if replay_attack_response.status_code >= 400:
-        print('SUCCESS: Replay attack was blocked')
+        print('SUCCESS: Replay attack blocked (this is good)', replay_attack_response.text)
     else:
-        print(f'ERROR: Replay attack has happened.')    
+        print(f'ERROR: Replay attack was succesful (this is bad).')    
     
 
 except requests.exceptions.RequestException as e:
